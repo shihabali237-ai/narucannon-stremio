@@ -142,6 +142,7 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
   name: "NaruCannon",
   description: "NaruCannon custom series",
   poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+posterShape: "poster",
         videos: episodes.map(ep => ({
           id: ep.id,
           title: ep.title,
