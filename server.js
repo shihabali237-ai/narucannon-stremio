@@ -47,7 +47,7 @@ async function getSeasons() {
     .sort((a, b) => a.season - b.season);
 }
 
-// Find all episodes inside a season
+// Find all episodes inside every season
 async function getEpisodes() {
   const seasons = await getSeasons();
   const episodes = [];
@@ -63,9 +63,9 @@ async function getEpisodes() {
 
       const match = file.name.match(/\s(\d+)\s+\(Sub\)\.mp4$/i);
 
-if (!match) continue;
+      if (!match) continue;
 
-const episode = Number(match[1]);
+      const episode = Number(match[1]);
 
       const relativePath = file.path
         .replace(`/CEG3sGRE/`, "")
@@ -73,10 +73,7 @@ const episode = Number(match[1]);
         .map(encodeURIComponent)
         .join("/");
 
-      const url = `${PIXELDRAIN_API.replace(
-        `/CEG3sGRE`,
-        `/CEG3sGRE`
-      )}/${relativePath}`;
+      const url = `${PIXELDRAIN_API}/${relativePath}`;
 
       episodes.push({
         id: `narucannon:${season.season}:${episode}`,
@@ -94,7 +91,6 @@ const episode = Number(match[1]);
     (a, b) => a.season - b.season || a.episode - b.episode
   );
 }
-
 
 // Manifest
 app.get("/manifest.json", (req, res) => {
@@ -115,7 +111,6 @@ app.get("/manifest.json", (req, res) => {
   });
 });
 
-
 // Catalog
 app.get("/catalog/series/narucannon.json", (req, res) => {
   res.json({
@@ -124,19 +119,20 @@ app.get("/catalog/series/narucannon.json", (req, res) => {
         id: "narucannon",
         type: "series",
         name: "NaruCannon",
-        poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+        poster:
+          "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
         posterShape: "poster"
       }
     ]
   });
 });
 
-
 // Series metadata
 app.get("/meta/series/narucannon.json", async (req, res) => {
   try {
     const episodes = await getEpisodes();
 
+    // AnimeHistory thumbnails
     const thumbnails = {
       "narucannon:1:1":
         "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
@@ -145,7 +141,37 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
         "https://www.animehistory.org/uploads/screencaps/naruto-episode-002-my-name-is-konohamaru_/cap_18-31_c2f5.jpg",
 
       "narucannon:1:3":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg"
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg",
+
+      "narucannon:1:4":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-004-pass-or-fail-survival-test/cap_10-31_dc11.jpg",
+
+      "narucannon:1:5":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-006-a-dangerous-mission_-journey-to-the-land-of-waves_/cap_09-06_633d.jpg",
+
+      "narucannon:1:6":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-007-the-assassin-of-the-mist_/cap_11-06_3700.jpg",
+
+      "narucannon:1:7":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-008-the-oath-of-pain/cap_14-27_cfe2.jpg",
+
+      "narucannon:1:8":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-010-the-forest-of-chakra/cap_10-38_f303.jpg",
+
+      "narucannon:1:9":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
+
+      "narucannon:1:10":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
+
+      "narucannon:1:11":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
+
+      "narucannon:1:12":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-018-the-weapons-known-as-shinobi/cap_19-03_d46d.jpg",
+
+      "narucannon:1:13":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-019-the-demon-in-the-snow/cap_15-25_4981.jpg"
     };
 
     res.json({
@@ -154,7 +180,8 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
         type: "series",
         name: "NaruCannon",
         description: "NaruCannon custom series",
-        poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+        poster:
+          "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
         posterShape: "poster",
 
         videos: episodes.map(ep => ({
@@ -163,6 +190,7 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
           released: "2002-01-01T00:00:00.000Z",
           season: ep.season,
           episode: ep.episode,
+
           ...(thumbnails[ep.id]
             ? { thumbnail: thumbnails[ep.id] }
             : {})
@@ -177,7 +205,6 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
     });
   }
 });
-
 
 // Streams
 app.get(/^\/stream\/series\/(.+)\.json$/, async (req, res) => {
@@ -208,7 +235,6 @@ app.get(/^\/stream\/series\/(.+)\.json$/, async (req, res) => {
     });
   }
 });
-
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`NaruCannon Pixeldrain server running on port ${PORT}`);
