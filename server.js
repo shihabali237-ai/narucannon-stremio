@@ -8,16 +8,101 @@ const PIXELDRAIN_API = `https://pixeldrain.net/api/filesystem/${PIXELDRAIN_ID}`;
 
 const CACHE_TTL = 10 * 60 * 1000;
 
-let episodesCache = null;
-let episodesCacheTime = 0;
-let episodesPromise = null;
+let discoveryCache = [];
+let discoveryCacheTime = 0;
+let discoveryPromise = null;
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  next();
-});
+/*
+ * ============================================================
+ * SEASON 1 + SEASON 2
+ * ============================================================
+ *
+ * These are kept locally so Stremio does not have to wait for
+ * Pixeldrain just to display the seasons you are currently using.
+ */
 
-// Get the contents of a Pixeldrain folder
+const knownEpisodes = [];
+
+// Season 1 — Land of Waves
+for (let episode = 1; episode <= 13; episode++) {
+  knownEpisodes.push({
+    id: `narucannon:1:${episode}`,
+    season: 1,
+    episode,
+    title: `Land of Waves ${String(episode).padStart(2, "0")}`
+  });
+}
+
+// Season 2 — Chūnin Exams
+for (let episode = 1; episode <= 38; episode++) {
+  knownEpisodes.push({
+    id: `narucannon:2:${episode}`,
+    season: 2,
+    episode,
+    title: `Chunin Exams ${String(episode).padStart(2, "0")}`
+  });
+}
+
+/*
+ * AnimeHistory thumbnails
+ *
+ * Season 1 has been mapped from the episodes you have watched.
+ * Season 2 will be added as you watch it.
+ */
+
+const thumbnails = {
+  "narucannon:1:1":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
+
+  "narucannon:1:2":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-002-my-name-is-konohamaru_/cap_18-31_c2f5.jpg",
+
+  "narucannon:1:3":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg",
+
+  "narucannon:1:4":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-004-pass-or-fail-survival-test/cap_10-31_dc11.jpg",
+
+  "narucannon:1:5":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-006-a-dangerous-mission_-journey-to-the-land-of-waves_/cap_09-06_633d.jpg",
+
+  "narucannon:1:6":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-007-the-assassin-of-the-mist_/cap_11-06_3700.jpg",
+
+  "narucannon:1:7":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-008-the-oath-of-pain/cap_14-27_cfe2.jpg",
+
+  "narucannon:1:8":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-010-the-forest-of-chakra/cap_10-38_f303.jpg",
+
+  "narucannon:1:9":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
+
+  "narucannon:1:10":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
+
+  "narucannon:1:11":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
+
+  "narucannon:1:12":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-018-the-weapons-known-as-shinobi/cap_19-03_d46d.jpg",
+
+  "narucannon:1:13":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-019-the-demon-in-the-snow/cap_15-25_4981.jpg"
+};
+
+/*
+ * ============================================================
+ * PIXELDRAIN DISCOVERY
+ * ============================================================
+ *
+ * Seasons 1 and 2 are already known above.
+ *
+ * We only need Pixeldrain discovery for Season 3+.
+ * That means opening NaruCannon does not need to wait for the
+ * entire library before showing Seasons 1 and 2.
+ */
+
 async function getFolder(path = "") {
   const url = path
     ? `${PIXELDRAIN_API}/${encodeURIComponent(path)}`
@@ -32,11 +117,12 @@ async function getFolder(path = "") {
   return response.json();
 }
 
-// Find all season folders
-async function getSeasons() {
+async function discoverFutureSeasons() {
+  console.log("Checking Pixeldrain for additional seasons...");
+
   const root = await getFolder();
 
-  return root.children
+  const seasons = root.children
     .filter(item => item.type === "dir")
     .map(item => {
       const match = item.name.match(/^(\d+(?:\.\d+)?)\s*-\s*(.+)$/);
@@ -50,17 +136,9 @@ async function getSeasons() {
       };
     })
     .filter(Boolean)
+    .filter(season => season.season >= 3)
     .sort((a, b) => a.season - b.season);
-}
 
-// Build the complete episode list from Pixeldrain
-async function loadEpisodes() {
-  console.log("Refreshing NaruCannon episode cache...");
-
-  const seasons = await getSeasons();
-  const episodes = [];
-
-  // Check all season folders at the same time
   const folders = await Promise.all(
     seasons.map(async season => ({
       season,
@@ -69,6 +147,8 @@ async function loadEpisodes() {
       )
     }))
   );
+
+  const discovered = [];
 
   for (const { season, folder } of folders) {
     for (const file of folder.children) {
@@ -81,69 +161,183 @@ async function loadEpisodes() {
 
       const episode = Number(match[1]);
 
-      const relativePath = file.path
-        .replace(`/CEG3sGRE/`, "")
-        .split("/")
-        .map(encodeURIComponent)
-        .join("/");
-
-      const url = `${PIXELDRAIN_API}/${relativePath}`;
-
-      episodes.push({
+      discovered.push({
         id: `narucannon:${season.season}:${episode}`,
         title: file.name
           .replace(/^\[NaruCannon Recut\]\s*/i, "")
           .replace(/\s*\(Sub\)\.mp4$/i, ""),
         season: season.season,
         episode,
-        url
+        url: getPixeldrainFileUrl(file.path)
       });
     }
   }
 
-  episodes.sort(
+  discovered.sort(
     (a, b) => a.season - b.season || a.episode - b.episode
   );
 
-  console.log(`Cached ${episodes.length} NaruCannon episodes.`);
+  discoveryCache = discovered;
+  discoveryCacheTime = Date.now();
 
-  return episodes;
+  console.log(
+    `Discovered ${discovered.length} additional episodes.`
+  );
+
+  return discovered;
 }
 
-// Use cached data instead of scanning Pixeldrain every request
-async function getEpisodes() {
+function getPixeldrainFileUrl(filePath) {
+  const relativePath = filePath
+    .replace(`/CEG3sGRE/`, "")
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/");
+
+  return `${PIXELDRAIN_API}/${relativePath}`;
+}
+
+async function refreshDiscoveryInBackground() {
   const now = Date.now();
 
   if (
-    episodesCache &&
-    now - episodesCacheTime < CACHE_TTL
+    discoveryCache.length > 0 &&
+    now - discoveryCacheTime < CACHE_TTL
   ) {
-    return episodesCache;
+    return;
   }
 
-  // Prevent multiple simultaneous Pixeldrain scans
-  if (episodesPromise) {
-    return episodesPromise;
+  if (discoveryPromise) {
+    return discoveryPromise;
   }
 
-  episodesPromise = loadEpisodes()
-    .then(episodes => {
-      episodesCache = episodes;
-      episodesCacheTime = Date.now();
-      return episodes;
+  discoveryPromise = discoverFutureSeasons()
+    .catch(error => {
+      console.error("Background Pixeldrain discovery failed:", error);
     })
     .finally(() => {
-      episodesPromise = null;
+      discoveryPromise = null;
     });
 
-  return episodesPromise;
+  return discoveryPromise;
 }
 
-// Manifest
+/*
+ * ============================================================
+ * EPISODE LIST
+ * ============================================================
+ */
+
+function getKnownEpisodes() {
+  return knownEpisodes.map(ep => ({
+    ...ep
+  }));
+}
+
+async function getAllEpisodes() {
+  const base = getKnownEpisodes();
+
+  const additional = discoveryCache.length
+    ? discoveryCache
+    : [];
+
+  const combined = [...base, ...additional];
+
+  const unique = new Map();
+
+  for (const episode of combined) {
+    unique.set(episode.id, episode);
+  }
+
+  return [...unique.values()].sort(
+    (a, b) => a.season - b.season || a.episode - b.episode
+  );
+}
+
+/*
+ * ============================================================
+ * PIXELDRAIN STREAM URL
+ * ============================================================
+ *
+ * For Seasons 1 and 2 we use the cached/discovered URL when
+ * available. For anything else, we refresh Pixeldrain only
+ * when Stremio actually asks to play the episode.
+ */
+
+async function findPixeldrainEpisode(id) {
+  const cached = discoveryCache.find(ep => ep.id === id);
+
+  if (cached) {
+    return cached;
+  }
+
+  /*
+   * If it is Season 1 or 2, discover the exact Pixeldrain file
+   * only when playback is requested.
+   */
+  const match = id.match(/^narucannon:(\d+):(\d+)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const seasonNumber = Number(match[1]);
+  const episodeNumber = Number(match[2]);
+
+  const root = await getFolder();
+
+  const seasonFolder = root.children.find(item => {
+    if (item.type !== "dir") return false;
+
+    const match = item.name.match(
+      /^(\d+(?:\.\d+)?)\s*-\s*(.+)$/
+    );
+
+    return match && Number(match[1]) === seasonNumber;
+  });
+
+  if (!seasonFolder) {
+    return null;
+  }
+
+  const folder = await getFolder(
+    seasonFolder.path.replace(`/CEG3sGRE/`, "")
+  );
+
+  const file = folder.children.find(item => {
+    if (item.type !== "file") return false;
+    if (!item.name.toLowerCase().endsWith(".mp4")) return false;
+
+    const match = item.name.match(/\s(\d+)\s+\(Sub\)\.mp4$/i);
+
+    return match && Number(match[1]) === episodeNumber;
+  });
+
+  if (!file) {
+    return null;
+  }
+
+  return {
+    id,
+    season: seasonNumber,
+    episode: episodeNumber,
+    title: file.name
+      .replace(/^\[NaruCannon Recut\]\s*/i, "")
+      .replace(/\s*\(Sub\)\.mp4$/i, ""),
+    url: getPixeldrainFileUrl(file.path)
+  };
+}
+
+/*
+ * ============================================================
+ * MANIFEST
+ * ============================================================
+ */
+
 app.get("/manifest.json", (req, res) => {
   res.json({
     id: "com.narucannon.custom",
-    version: "2.1.0",
+    version: "3.0.0",
     name: "NaruCannon",
     description: "NaruCannon from Pixeldrain",
     resources: ["catalog", "meta", "stream"],
@@ -158,8 +352,19 @@ app.get("/manifest.json", (req, res) => {
   });
 });
 
-// Catalog
+/*
+ * ============================================================
+ * CATALOG
+ * ============================================================
+ */
+
 app.get("/catalog/series/narucannon.json", (req, res) => {
+  /*
+   * Start checking for future seasons in the background.
+   * We do NOT wait for Pixeldrain here.
+   */
+  refreshDiscoveryInBackground();
+
   res.json({
     metas: [
       {
@@ -174,51 +379,28 @@ app.get("/catalog/series/narucannon.json", (req, res) => {
   });
 });
 
-// Series metadata
+/*
+ * ============================================================
+ * SERIES METADATA
+ * ============================================================
+ */
+
 app.get("/meta/series/narucannon.json", async (req, res) => {
   try {
-    const episodes = await getEpisodes();
+    /*
+     * Do not wait for Pixeldrain discovery.
+     *
+     * Seasons 1 and 2 are immediately available.
+     * Additional seasons are added automatically once the
+     * background discovery finishes.
+     */
+    const episodes = await getAllEpisodes();
 
-    const thumbnails = {
-      "narucannon:1:1":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
-
-      "narucannon:1:2":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-002-my-name-is-konohamaru_/cap_18-31_c2f5.jpg",
-
-      "narucannon:1:3":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg",
-
-      "narucannon:1:4":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-004-pass-or-fail-survival-test/cap_10-31_dc11.jpg",
-
-      "narucannon:1:5":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-006-a-dangerous-mission_-journey-to-the-land-of-waves_/cap_09-06_633d.jpg",
-
-      "narucannon:1:6":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-007-the-assassin-of-the-mist_/cap_11-06_3700.jpg",
-
-      "narucannon:1:7":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-008-the-oath-of-pain/cap_14-27_cfe2.jpg",
-
-      "narucannon:1:8":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-010-the-forest-of-chakra/cap_10-38_f303.jpg",
-
-      "narucannon:1:9":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
-
-      "narucannon:1:10":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
-
-      "narucannon:1:11":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
-
-      "narucannon:1:12":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-018-the-weapons-known-as-shinobi/cap_19-03_d46d.jpg",
-
-      "narucannon:1:13":
-        "https://www.animehistory.org/uploads/screencaps/naruto-episode-019-the-demon-in-the-snow/cap_15-25_4981.jpg"
-    };
+    /*
+     * Kick off future-season discovery without delaying the
+     * response Stremio is currently waiting for.
+     */
+    refreshDiscoveryInBackground();
 
     res.json({
       meta: {
@@ -226,8 +408,10 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
         type: "series",
         name: "NaruCannon",
         description: "NaruCannon custom series",
+
         poster:
           "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+
         posterShape: "poster",
 
         videos: episodes.map(ep => ({
@@ -247,21 +431,27 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
     console.error(error);
 
     res.status(500).json({
-      error: "Could not load NaruCannon from Pixeldrain"
+      error: "Could not load NaruCannon"
     });
   }
 });
 
-// Streams
+/*
+ * ============================================================
+ * STREAMS
+ * ============================================================
+ */
+
 app.get(/^\/stream\/series\/(.+)\.json$/, async (req, res) => {
   try {
     const id = decodeURIComponent(req.params[0]);
-    const episodes = await getEpisodes();
 
-    const episode = episodes.find(ep => ep.id === id);
+    const episode = await findPixeldrainEpisode(id);
 
     if (!episode) {
-      return res.json({ streams: [] });
+      return res.json({
+        streams: []
+      });
     }
 
     res.json({
@@ -282,6 +472,14 @@ app.get(/^\/stream\/series\/(.+)\.json$/, async (req, res) => {
   }
 });
 
+/*
+ * ============================================================
+ * SERVER
+ * ============================================================
+ */
+
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`NaruCannon Pixeldrain server running on port ${PORT}`);
+  console.log(
+    `NaruCannon optimized server running on port ${PORT}`
+  );
 });
