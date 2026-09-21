@@ -145,23 +145,29 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
   description: "NaruCannon custom series",
   poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
 posterShape: "poster",
-        videos: episodes.map(ep => ({
-          id: ep.id,
-          title: ep.title,
-          released: "2002-01-01T00:00:00.000Z",
-          season: ep.season,
-          episode: ep.episode
-        }))
-      }
-    });
-  } catch (error) {
-    console.error(error);
+        videos: episodes.map(ep => {
+  const thumbnails = {
+    "narucannon:1:1":
+      "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
 
-    res.status(500).json({
-      error: "Could not load NaruCannon from Pixeldrain"
-    });
-  }
-});
+    "narucannon:1:2":
+      "https://www.animehistory.org/uploads/screencaps/naruto-episode-002-my-name-is-konohamaru_/cap_18-31_c2f5.jpg",
+
+    "narucannon:1:3":
+      "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg"
+  };
+
+  return {
+    id: ep.id,
+    title: ep.title,
+    released: "2002-01-01T00:00:00.000Z",
+    season: ep.season,
+    episode: ep.episode,
+    ...(thumbnails[ep.id]
+      ? { thumbnail: thumbnails[ep.id] }
+      : {})
+  };
+})
 
 
 // Streams
