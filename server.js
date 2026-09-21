@@ -137,10 +137,11 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
 
     res.json({
       meta: {
-        id: "narucannon",
-        type: "series",
-        name: "NaruCannon",
-        description: "NaruCannon custom series",
+  id: "narucannon",
+  type: "series",
+  name: "NaruCannon",
+  description: "NaruCannon custom series",
+  poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
         videos: episodes.map(ep => ({
           id: ep.id,
           title: ep.title,
