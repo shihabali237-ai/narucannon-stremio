@@ -123,7 +123,9 @@ app.get("/catalog/series/narucannon.json", (req, res) => {
       {
         id: "narucannon",
         type: "series",
-        name: "NaruCannon"
+        name: "NaruCannon",
+        poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+        posterShape: "poster"
       }
     ]
   });
