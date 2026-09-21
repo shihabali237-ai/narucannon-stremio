@@ -61,11 +61,11 @@ async function getEpisodes() {
       if (file.type !== "file") continue;
       if (!file.name.toLowerCase().endsWith(".mp4")) continue;
 
-      const match = file.name.match(/(?:Chunin Exams|Land of Waves)\s+(\d+)/i);
+      const match = file.name.match(/\s(\d+)\s+\(Sub\)\.mp4$/i);
 
-      if (!match) continue;
+if (!match) continue;
 
-      const episode = Number(match[1]);
+const episode = Number(match[1]);
 
       const relativePath = file.path
         .replace(`/CEG3sGRE/`, "")
