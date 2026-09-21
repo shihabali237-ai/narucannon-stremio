@@ -166,8 +166,10 @@ posterShape: "poster",
     ...(thumbnails[ep.id]
       ? { thumbnail: thumbnails[ep.id] }
       : {})
-  };
+    };
 })
+}
+});
 
 
 // Streams
