@@ -6,6 +6,12 @@ const PORT = 8080;
 const PIXELDRAIN_ID = "CEG3sGRE";
 const PIXELDRAIN_API = `https://pixeldrain.net/api/filesystem/${PIXELDRAIN_ID}`;
 
+const CACHE_TTL = 10 * 60 * 1000;
+
+let episodesCache = null;
+let episodesCacheTime = 0;
+let episodesPromise = null;
+
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
@@ -47,16 +53,24 @@ async function getSeasons() {
     .sort((a, b) => a.season - b.season);
 }
 
-// Find all episodes inside every season
-async function getEpisodes() {
+// Build the complete episode list from Pixeldrain
+async function loadEpisodes() {
+  console.log("Refreshing NaruCannon episode cache...");
+
   const seasons = await getSeasons();
   const episodes = [];
 
-  for (const season of seasons) {
-    const folder = await getFolder(
-      season.path.replace(`/CEG3sGRE/`, "")
-    );
+  // Check all season folders at the same time
+  const folders = await Promise.all(
+    seasons.map(async season => ({
+      season,
+      folder: await getFolder(
+        season.path.replace(`/CEG3sGRE/`, "")
+      )
+    }))
+  );
 
+  for (const { season, folder } of folders) {
     for (const file of folder.children) {
       if (file.type !== "file") continue;
       if (!file.name.toLowerCase().endsWith(".mp4")) continue;
@@ -87,16 +101,49 @@ async function getEpisodes() {
     }
   }
 
-  return episodes.sort(
+  episodes.sort(
     (a, b) => a.season - b.season || a.episode - b.episode
   );
+
+  console.log(`Cached ${episodes.length} NaruCannon episodes.`);
+
+  return episodes;
+}
+
+// Use cached data instead of scanning Pixeldrain every request
+async function getEpisodes() {
+  const now = Date.now();
+
+  if (
+    episodesCache &&
+    now - episodesCacheTime < CACHE_TTL
+  ) {
+    return episodesCache;
+  }
+
+  // Prevent multiple simultaneous Pixeldrain scans
+  if (episodesPromise) {
+    return episodesPromise;
+  }
+
+  episodesPromise = loadEpisodes()
+    .then(episodes => {
+      episodesCache = episodes;
+      episodesCacheTime = Date.now();
+      return episodes;
+    })
+    .finally(() => {
+      episodesPromise = null;
+    });
+
+  return episodesPromise;
 }
 
 // Manifest
 app.get("/manifest.json", (req, res) => {
   res.json({
     id: "com.narucannon.custom",
-    version: "2.0.0",
+    version: "2.1.0",
     name: "NaruCannon",
     description: "NaruCannon from Pixeldrain",
     resources: ["catalog", "meta", "stream"],
@@ -132,7 +179,6 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
   try {
     const episodes = await getEpisodes();
 
-    // AnimeHistory thumbnails
     const thumbnails = {
       "narucannon:1:1":
         "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
