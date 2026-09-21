@@ -137,38 +137,45 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
   try {
     const episodes = await getEpisodes();
 
+    const thumbnails = {
+      "narucannon:1:1":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
+
+      "narucannon:1:2":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-002-my-name-is-konohamaru_/cap_18-31_c2f5.jpg",
+
+      "narucannon:1:3":
+        "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg"
+    };
+
     res.json({
       meta: {
-  id: "narucannon",
-  type: "series",
-  name: "NaruCannon",
-  description: "NaruCannon custom series",
-  poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
-posterShape: "poster",
-        videos: episodes.map(ep => {
-  const thumbnails = {
-    "narucannon:1:1":
-      "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
+        id: "narucannon",
+        type: "series",
+        name: "NaruCannon",
+        description: "NaruCannon custom series",
+        poster: "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+        posterShape: "poster",
 
-    "narucannon:1:2":
-      "https://www.animehistory.org/uploads/screencaps/naruto-episode-002-my-name-is-konohamaru_/cap_18-31_c2f5.jpg",
+        videos: episodes.map(ep => ({
+          id: ep.id,
+          title: ep.title,
+          released: "2002-01-01T00:00:00.000Z",
+          season: ep.season,
+          episode: ep.episode,
+          ...(thumbnails[ep.id]
+            ? { thumbnail: thumbnails[ep.id] }
+            : {})
+        }))
+      }
+    });
+  } catch (error) {
+    console.error(error);
 
-    "narucannon:1:3":
-      "https://www.animehistory.org/uploads/screencaps/naruto-episode-003-sasuke-and-sakura-friends-or-foes/cap_02-54_323c.jpg"
-  };
-
-  return {
-    id: ep.id,
-    title: ep.title,
-    released: "2002-01-01T00:00:00.000Z",
-    season: ep.season,
-    episode: ep.episode,
-    ...(thumbnails[ep.id]
-      ? { thumbnail: thumbnails[ep.id] }
-      : {})
-    };
-})
-}
+    res.status(500).json({
+      error: "Could not load NaruCannon from Pixeldrain"
+    });
+  }
 });
 
 
