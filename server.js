@@ -58,6 +58,41 @@ const season2Dates = [
   "2003-03-20T00:00:00.000Z"
 ];
 
+/*
+ * KNOWN EPISODES
+ *
+ * IMPORTANT:
+ * This must exist before getKnownEpisodes() is called.
+ */
+const knownEpisodes = [];
+
+for (let episode = 1; episode <= 13; episode++) {
+  knownEpisodes.push({
+    id: `narucannon:1:${episode}`,
+    season: 1,
+    episode,
+    title: season1Titles[episode - 1],
+    released: season1Dates[episode - 1]
+  });
+}
+
+for (let episode = 1; episode <= 38; episode++) {
+  knownEpisodes.push({
+    id: `narucannon:2:${episode}`,
+    season: 2,
+    episode,
+    title:
+      season2Titles[episode - 1] ||
+      `Chunin Exams ${String(episode).padStart(2, "0")}`,
+    released:
+      season2Dates[episode - 1] ||
+      "2003-03-20T00:00:00.000Z"
+  });
+}
+
+/*
+ * EPISODE THUMBNAILS
+ */
 const thumbnails = {
   "narucannon:1:1":
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
@@ -87,7 +122,7 @@ const thumbnails = {
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
 
   "narucannon:1:10":
-    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s_secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
 
   "narucannon:1:11":
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
@@ -111,6 +146,9 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-024-start-your-engines-the-chunin-exam-begins_/cap_13-37_8db4.jpg"
 };
 
+/*
+ * PIXELDRAIN FOLDER ACCESS
+ */
 async function getFolder(path = "") {
   const url = path
     ? `${PIXELDRAIN_API}/${encodeURIComponent(path)}`
@@ -125,6 +163,12 @@ async function getFolder(path = "") {
   return response.json();
 }
 
+/*
+ * DISCOVER SEASONS 3+
+ *
+ * Seasons 1 and 2 are already known above,
+ * so Render doesn't need to scan them when loading metadata.
+ */
 async function discoverFutureSeasons() {
   const root = await getFolder();
 
@@ -161,6 +205,7 @@ async function discoverFutureSeasons() {
           `Failed to load season ${season.season}:`,
           error
         );
+
         return null;
       }
     })
@@ -200,10 +245,15 @@ async function discoverFutureSeasons() {
   }
 
   return results.sort(
-    (a, b) => a.season - b.season || a.episode - b.episode
+    (a, b) =>
+      a.season - b.season ||
+      a.episode - b.episode
   );
 }
 
+/*
+ * BACKGROUND DISCOVERY
+ */
 async function refreshDiscoveryInBackground() {
   if (discoveryPromise) {
     return discoveryPromise;
@@ -213,10 +263,15 @@ async function refreshDiscoveryInBackground() {
     .then(results => {
       discoveryCache = results;
       discoveryCacheTime = Date.now();
+
       return results;
     })
     .catch(error => {
-      console.error("Background discovery failed:", error);
+      console.error(
+        "Background discovery failed:",
+        error
+      );
+
       return [];
     })
     .finally(() => {
@@ -226,15 +281,24 @@ async function refreshDiscoveryInBackground() {
   return discoveryPromise;
 }
 
+/*
+ * GET KNOWN EPISODES
+ */
 function getKnownEpisodes() {
   return knownEpisodes.map(ep => ({
     ...ep,
+
     ...(thumbnails[ep.id]
-      ? { thumbnail: thumbnails[ep.id] }
+      ? {
+          thumbnail: thumbnails[ep.id]
+        }
       : {})
   }));
 }
 
+/*
+ * GET ALL EPISODES
+ */
 async function getAllEpisodes() {
   const known = getKnownEpisodes();
 
@@ -242,7 +306,10 @@ async function getAllEpisodes() {
     discoveryCache.length > 0 &&
     Date.now() - discoveryCacheTime < CACHE_TTL
   ) {
-    return [...known, ...discoveryCache];
+    return [
+      ...known,
+      ...discoveryCache
+    ];
   }
 
   refreshDiscoveryInBackground();
@@ -250,6 +317,9 @@ async function getAllEpisodes() {
   return known;
 }
 
+/*
+ * PIXELDRAIN FILE URL
+ */
 function getPixeldrainFileUrl(filePath) {
   const relativePath = filePath
     .replace(`/CEG3sGRE/`, "")
@@ -260,6 +330,12 @@ function getPixeldrainFileUrl(filePath) {
   return `${PIXELDRAIN_API}/${relativePath}`;
 }
 
+/*
+ * FIND A SPECIFIC EPISODE IN PIXELDRAIN
+ *
+ * This only happens when somebody actually
+ * tries to play an episode.
+ */
 async function findPixeldrainEpisode(id) {
   const parts = id.split(":");
 
@@ -277,9 +353,14 @@ async function findPixeldrainEpisode(id) {
       return false;
     }
 
-    const match = item.name.match(/^(\d+(?:\.\d+)?)\s*-\s*(.+)$/);
+    const match = item.name.match(
+      /^(\d+(?:\.\d+)?)\s*-\s*(.+)$/
+    );
 
-    return match && Number(match[1]) === seasonNumber;
+    return (
+      match &&
+      Number(match[1]) === seasonNumber
+    );
   });
 
   if (!seasonFolder) {
@@ -287,46 +368,104 @@ async function findPixeldrainEpisode(id) {
   }
 
   const folder = await getFolder(
-    seasonFolder.path.replace(`/CEG3sGRE/`, "")
+    seasonFolder.path.replace(
+      `/CEG3sGRE/`,
+      ""
+    )
   );
 
   for (const file of folder.children) {
     if (file.type !== "file") continue;
-    if (!file.name.toLowerCase().endsWith(".mp4")) continue;
 
-    const match = file.name.match(/\s(\d+)\s+\(Sub\)\.mp4$/i);
+    if (
+      !file.name
+        .toLowerCase()
+        .endsWith(".mp4")
+    ) {
+      continue;
+    }
+
+    const match = file.name.match(
+      /\s(\d+)\s+\(Sub\)\.mp4$/i
+    );
 
     if (!match) continue;
 
-    if (Number(match[1]) !== episodeNumber) continue;
+    if (
+      Number(match[1]) !== episodeNumber
+    ) {
+      continue;
+    }
 
     return {
       id,
+
       title: file.name
-        .replace(/^\[NaruCannon Recut\]\s*/i, "")
-        .replace(/\s*\(Sub\)\.mp4$/i, ""),
+        .replace(
+          /^\[NaruCannon Recut\]\s*/i,
+          ""
+        )
+        .replace(
+          /\s*\(Sub\)\.mp4$/i,
+          ""
+        ),
+
       season: seasonNumber,
+
       episode: episodeNumber,
-      url: getPixeldrainFileUrl(file.path)
+
+      url: getPixeldrainFileUrl(
+        file.path
+      )
     };
   }
 
   return null;
 }
 
+/*
+ * CORS
+ */
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "*"
+  );
+
   next();
 });
 
+/*
+ * MANIFEST
+ */
 app.get("/manifest.json", (req, res) => {
+  res.setHeader(
+    "Cache-Control",
+    "no-store"
+  );
+
+  refreshDiscoveryInBackground();
+
   res.json({
     id: "com.narucannon.custom",
-    version: "2.0.0",
+
+    version: "2.0.1",
+
     name: "NaruCannon",
-    description: "NaruCannon from Pixeldrain",
-    resources: ["catalog", "meta", "stream"],
-    types: ["series"],
+
+    description:
+      "NaruCannon from Pixeldrain",
+
+    resources: [
+      "catalog",
+      "meta",
+      "stream"
+    ],
+
+    types: [
+      "series"
+    ],
+
     catalogs: [
       {
         type: "series",
@@ -337,95 +476,157 @@ app.get("/manifest.json", (req, res) => {
   });
 });
 
-app.get("/catalog/series/narucannon.json", (req, res) => {
-  refreshDiscoveryInBackground();
+/*
+ * CATALOG
+ */
+app.get(
+  "/catalog/series/narucannon.json",
+  (req, res) => {
+    res.setHeader(
+      "Cache-Control",
+      "no-store"
+    );
 
-  res.json({
-    metas: [
-      {
-        id: "narucannon",
-        type: "series",
-        name: "NaruCannon",
-        poster:
-          "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
-        posterShape: "poster"
-      }
-    ]
-  });
-});
-
-app.get("/meta/series/narucannon.json", async (req, res) => {
-  try {
-    const episodes = await getAllEpisodes();
+    refreshDiscoveryInBackground();
 
     res.json({
-      meta: {
-        id: "narucannon",
-        type: "series",
-        name: "NaruCannon",
-        description:
-          "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.",
-
-        poster:
-          "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
-
-        posterShape: "poster",
-
-        videos: episodes.map(ep => ({
-          id: ep.id,
-          title: ep.title,
-          released:
-            ep.released ||
-            "2002-01-01T00:00:00.000Z",
-          season: ep.season,
-          episode: ep.episode,
-          ...(ep.thumbnail
-            ? { thumbnail: ep.thumbnail }
-            : {})
-        }))
-      }
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Could not load NaruCannon from Pixeldrain"
-    });
-  }
-});
-
-app.get(/^\/stream\/series\/(.+)\.json$/, async (req, res) => {
-  try {
-    const id = decodeURIComponent(req.params[0]);
-
-    const episode = await findPixeldrainEpisode(id);
-
-    if (!episode) {
-      return res.json({
-        streams: []
-      });
-    }
-
-    res.json({
-      streams: [
+      metas: [
         {
+          id: "narucannon",
+
+          type: "series",
+
           name: "NaruCannon",
-          title: episode.title,
-          url: episode.url
+
+          poster:
+            "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+
+          posterShape:
+            "poster"
         }
       ]
     });
-  } catch (error) {
-    console.error(error);
-
-    res.json({
-      streams: []
-    });
   }
-});
+);
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(
-    `NaruCannon Pixeldrain server running on port ${PORT}`
-  );
-});
+/*
+ * SERIES METADATA
+ */
+app.get(
+  "/meta/series/narucannon.json",
+  async (req, res) => {
+    try {
+      res.setHeader(
+        "Cache-Control",
+        "no-store"
+      );
+
+      const episodes =
+        await getAllEpisodes();
+
+      res.json({
+        meta: {
+          id: "narucannon",
+
+          type: "series",
+
+          name: "NaruCannon",
+
+          description:
+            "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.",
+
+          poster:
+            "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+
+          posterShape:
+            "poster",
+
+          videos: episodes.map(ep => ({
+            id: ep.id,
+
+            title: ep.title,
+
+            released:
+              ep.released ||
+              "2002-01-01T00:00:00.000Z",
+
+            season: ep.season,
+
+            episode: ep.episode,
+
+            ...(ep.thumbnail
+              ? {
+                  thumbnail:
+                    ep.thumbnail
+                }
+              : {})
+          }))
+        }
+      });
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        error:
+          "Could not load NaruCannon from Pixeldrain"
+      });
+    }
+  }
+);
+
+/*
+ * STREAM
+ */
+app.get(
+  /^\/stream\/series\/(.+)\.json$/,
+  async (req, res) => {
+    try {
+      const id =
+        decodeURIComponent(
+          req.params[0]
+        );
+
+      const episode =
+        await findPixeldrainEpisode(
+          id
+        );
+
+      if (!episode) {
+        return res.json({
+          streams: []
+        });
+      }
+
+      res.json({
+        streams: [
+          {
+            name: "NaruCannon",
+
+            title: episode.title,
+
+            url: episode.url
+          }
+        ]
+      });
+    } catch (error) {
+      console.error(error);
+
+      res.json({
+        streams: []
+      });
+    }
+  }
+);
+
+/*
+ * START SERVER
+ */
+app.listen(
+  PORT,
+  "0.0.0.0",
+  () => {
+    console.log(
+      `NaruCannon Pixeldrain server running on port ${PORT}`
+    );
+  }
+);
