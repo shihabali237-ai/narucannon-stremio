@@ -729,6 +729,8 @@ app.get(
           req.params[0]
         );
 
+console.log("STREAM REQUEST:", id);
+
       const episode =
         await findPixeldrainEpisode(
 id
