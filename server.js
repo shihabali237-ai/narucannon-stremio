@@ -44,6 +44,10 @@ const season1Dates = [
   "2003-02-13T00:00:00.000Z"
 ];
 
+const season2Titles = [
+  "The Chunin Exams Begin"
+];
+
 const knownEpisodes = [];
 
 for (let episode = 1; episode <= 13; episode++) {
@@ -61,7 +65,9 @@ for (let episode = 1; episode <= 38; episode++) {
     id: `narucannon:2:${episode}`,
     season: 2,
     episode,
-    title: `Chunin Exams ${String(episode).padStart(2, "0")}`,
+    title:
+      season2Titles[episode - 1] ||
+      `Chunin Exams ${String(episode).padStart(2, "0")}`,
     released: "2003-02-20T00:00:00.000Z"
   });
 }
@@ -104,7 +110,10 @@ const thumbnails = {
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-018-the-weapons-known-as-shinobi/cap_19-03_d46d.jpg",
 
   "narucannon:1:13":
-    "https://www.animehistory.org/uploads/screencaps/naruto-episode-019-the-demon-in-the-snow/cap_15-25_4981.jpg"
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-019-the-demon-in-the-snow/cap_15-25_4981.jpg",
+
+  "narucannon:2:1":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-020-a-new-chapter-begins-the-chunin-exam_/cap_21-28_e0f5.jpg"
 };
 
 async function getFolder(path = "") {
@@ -360,16 +369,19 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
         type: "series",
         name: "NaruCannon",
         description:
-  "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.", 
+          "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.",
 
-poster:
+        poster:
           "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
+
         posterShape: "poster",
 
         videos: episodes.map(ep => ({
           id: ep.id,
           title: ep.title,
-          released: ep.released || "2002-01-01T00:00:00.000Z",
+          released:
+            ep.released ||
+            "2002-01-01T00:00:00.000Z",
           season: ep.season,
           episode: ep.episode,
           ...(ep.thumbnail
