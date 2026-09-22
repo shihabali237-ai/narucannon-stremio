@@ -151,6 +151,14 @@ for (let episode = 1; episode <= 38; episode++) {
   });
 }
 
+knownEpisodes.push({
+  id: "narucannon:3:1",
+  season: 3,
+  episode: 1,
+  title: "Itachi and Kisame Arrive",
+  released: "2004-04-28T00:00:00.000Z"
+});
+
 const thumbnails = {
   "narucannon:1:1":
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
@@ -303,7 +311,10 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-078-naruto_s-ninja-handbook/cap_10-13_53f9.jpg",
 
   "narucannon:2:38":
-    "https://animehistory.org/uploads/screencaps/naruto-episode-080-the-third-hokage_-forever-/cap_17-36_f3a1.jpg"
+    "https://animehistory.org/uploads/screencaps/naruto-episode-080-the-third-hokage_-forever-/cap_17-36_f3a1.jpg",
+
+  "narucannon:3:1":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-081-return-of-the-morning-mist/cap_19-28_ff08.jpg"
 };
 
 async function getFolder(path = "") {
@@ -444,23 +455,33 @@ function getKnownEpisodes() {
 async function getAllEpisodes() {
   const known = getKnownEpisodes();
 
+  let discovered;
+
   if (
     discoveryCache.length > 0 &&
     Date.now() - discoveryCacheTime < CACHE_TTL
   ) {
-    return [
-      ...known,
-      ...discoveryCache
-    ];
+    discovered = discoveryCache;
+  } else {
+    discovered =
+      await refreshDiscoveryInBackground();
   }
 
-  const discovered =
-    await refreshDiscoveryInBackground();
+  const episodes = new Map();
 
-  return [
-    ...known,
-    ...discovered
-  ];
+  for (const episode of discovered) {
+    episodes.set(episode.id, episode);
+  }
+
+  for (const episode of known) {
+    episodes.set(episode.id, episode);
+  }
+
+  return Array.from(episodes.values()).sort(
+    (a, b) =>
+      a.season - b.season ||
+      a.episode - b.episode
+  );
 }
 
 function getPixeldrainFileUrl(filePath) {
@@ -580,7 +601,7 @@ app.get("/manifest.json", (req, res) => {
   res.json({
     id: "com.narucannon.custom",
 
-    version: "2.0.5",
+    version: "2.0.6",
 
     name: "NaruCannon",
 
@@ -710,7 +731,7 @@ app.get(
 
       const episode =
         await findPixeldrainEpisode(
-          id
+id
         );
 
       if (!episode) {
@@ -749,7 +770,7 @@ app.listen(
   "0.0.0.0",
   () => {
     console.log(
-    `NaruCannon Pixeldrain server running on port ${PORT}`
+      `NaruCannon Pixeldrain server running on port ${PORT}`
     );
   }
 );
