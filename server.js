@@ -46,39 +46,17 @@ const season1Dates = [
 
 const season2Titles = [
   "The Chunin Exams Begin",
-  "Rock Lee vs Sasuke"
+  "Rock Lee vs Sasuke",
+  "Genin Takedown",
+  "Start Your Engines"
 ];
 
 const season2Dates = [
   "2003-02-27T00:00:00.000Z",
-  "2003-03-13T00:00:00.000Z"
+  "2003-03-06T00:00:00.000Z",
+  "2003-03-13T00:00:00.000Z",
+  "2003-03-20T00:00:00.000Z"
 ];
-
-const knownEpisodes = [];
-
-for (let episode = 1; episode <= 13; episode++) {
-  knownEpisodes.push({
-    id: `narucannon:1:${episode}`,
-    season: 1,
-    episode,
-    title: season1Titles[episode - 1],
-    released: season1Dates[episode - 1]
-  });
-}
-
-for (let episode = 1; episode <= 38; episode++) {
-  knownEpisodes.push({
-    id: `narucannon:2:${episode}`,
-    season: 2,
-    episode,
-    title:
-      season2Titles[episode - 1] ||
-      `Chunin Exams ${String(episode).padStart(2, "0")}`,
-    released:
-      season2Dates[episode - 1] ||
-      "2003-02-27T00:00:00.000Z"
-  });
-}
 
 const thumbnails = {
   "narucannon:1:1":
@@ -124,7 +102,13 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-020-a-new-chapter-begins-the-chunin-exam_/cap_21-28_e0f5.jpg",
 
   "narucannon:2:2":
-    "https://animehistory.org/uploads/screencaps/naruto-episode-022-chunin-challenge-rock-lee-vs-sasuke_/cap_09-57_011a.jpg"
+    "https://animehistory.org/uploads/screencaps/naruto-episode-022-chunin-challenge-rock-lee-vs-sasuke_/cap_09-57_011a.jpg",
+
+  "narucannon:2:3":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-023-genin-takedown_-all-nine-rookies-face-off_/cap_02-47_d7d5.jpg",
+
+  "narucannon:2:4":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-024-start-your-engines-the-chunin-exam-begins_/cap_13-37_8db4.jpg"
 };
 
 async function getFolder(path = "") {
