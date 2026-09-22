@@ -68,7 +68,7 @@ for (let episode = 1; episode <= 38; episode++) {
     title:
       season2Titles[episode - 1] ||
       `Chunin Exams ${String(episode).padStart(2, "0")}`,
-    released: "2003-02-20T00:00:00.000Z"
+    released: "2003-02-27T00:00:00.000Z"
   });
 }
 
