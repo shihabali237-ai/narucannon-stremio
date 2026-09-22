@@ -77,4 +77,76 @@ const thumbnails = {
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
 
   "narucannon:1:10":
-    "https://www.animehistory.org/uploads/screenc
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
+
+  "narucannon:1:11":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
+
+  "narucannon:1:12":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-018-the-weapons-known-as-shinobi/cap_19-03_d46d.jpg",
+
+  "narucannon:1:13":
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-019-the-demon-in-the-snow/cap_15-25_4981.jpg"
+};
+
+async function getFolder(path = "") {
+  const url = path
+    ? `${PIXELDRAIN_API}/${encodeURIComponent(path)}`
+    : PIXELDRAIN_API;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Pixeldrain returned ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function discoverFutureSeasons() {
+  const root = await getFolder();
+
+  const seasons = root.children
+    .filter(item => item.type === "dir")
+    .map(item => {
+      const match = item.name.match(/^(\d+(?:\.\d+)?)\s*-\s*(.+)$/);
+
+      if (!match) return null;
+
+      return {
+        season: Number(match[1]),
+        name: match[2],
+        path: item.path
+      };
+    })
+    .filter(Boolean)
+    .filter(season => season.season >= 3)
+    .sort((a, b) => a.season - b.season);
+
+  const results = [];
+
+  const folders = await Promise.all(
+    seasons.map(async season => {
+      try {
+        return {
+          season,
+          folder: await getFolder(
+            season.path.replace(`/CEG3sGRE/`, "")
+          )
+        };
+      } catch (error) {
+        console.error(
+          `Failed to load season ${season.season}:`,
+          error
+        );
+        return null;
+      }
+    })
+  );
+
+  for (const result of folders) {
+    if (!result) continue;
+
+    for (const file of result.folder.children) {
+      if (file.type !== "file") continue;
+      if (!file.name.toLowerCase().endsWith(".mp4")) continue;
