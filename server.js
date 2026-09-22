@@ -45,18 +45,26 @@ const season1Dates = [
 ];
 
 const season2Titles = [
-  "The Chunin Exams Begin"
+  "The Chunin Exams Begin",
+  "Rock Lee vs Sasuke"
 ];
 
-const knownEpisodes = [];
+const season2Dates = [
+  "2003-02-27T00:00:00.000Z",
+  "2003-03-13T00:00:00.000Z"
+];
 
-for (let episode = 1; episode <= 13; episode++) {
+for (let episode = 1; episode <= 38; episode++) {
   knownEpisodes.push({
-    id: `narucannon:1:${episode}`,
-    season: 1,
+    id: `narucannon:2:${episode}`,
+    season: 2,
     episode,
-    title: season1Titles[episode - 1],
-    released: season1Dates[episode - 1]
+    title:
+      season2Titles[episode - 1] ||
+      `Chunin Exams ${String(episode).padStart(2, "0")}`,
+    released:
+      season2Dates[episode - 1] ||
+      "2003-02-27T00:00:00.000Z"
   });
 }
 
@@ -114,6 +122,9 @@ const thumbnails = {
 
   "narucannon:2:1":
     "https://animehistory.org/uploads/screencaps/naruto-episode-020-a-new-chapter-begins-the-chunin-exam_/cap_21-28_e0f5.jpg"
+
+"narucannon:2:2":
+  "https://animehistory.org/uploads/screencaps/naruto-episode-022-chunin-challenge-rock-lee-vs-sasuke_/cap_09-57_011a.jpg",
 };
 
 async function getFolder(path = "") {
