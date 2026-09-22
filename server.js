@@ -67,7 +67,25 @@ const season2Titles = [
   "Akamaru Unleashed! Who's Top Dog now?",
   "Byakugan Battle: Hinata Grows Bold!",
   "Gaara vs. Rock Lee: The Power of Youth Explodes!",
-  "A Shadow in Darkness: Danger Approaches Sasuke"
+  "A Shadow in Darkness: Danger Approaches Sasuke",
+  "Ebisu Returns: Naruto's Toughest Training Yet!",
+  "Long Time No See: Jiraiya Returns",
+  "The Summoning Jutsu: Wisdom of the Pervy Sage!",
+  "Naruto Meets the Nine-Tails",
+  "Gaara's Bloodlust",
+  "Byakugan vs Shadow Clone Technique",
+  "Ultimate Defense: Zero Blind Spot!",
+  "Shikamaru vs. Temari: The Battle of Wits",
+  "Sasuke's Inner Strength",
+  "Sasuke's New Technique",
+  "Orochimaru Threatens the Third Hokage",
+  "Tracking the Enemy",
+  "Hiruzen's Past",
+  "Forbidden Secret Technique: Reaper Death Seal!",
+  "Sasuke's Decision: Pushed To The Edge!",
+  "The Two Faces of Gaara: Light vs Darkness",
+  "Gaara Becomes the Sand Monster",
+  "Third Hokage Forever"
 ];
 
 const season2Dates = [
@@ -90,7 +108,25 @@ const season2Dates = [
   "2003-08-14T00:00:00.000Z",
   "2003-08-28T00:00:00.000Z",
   "2003-09-11T00:00:00.000Z",
-  "2003-10-02T00:00:00.000Z"
+  "2003-10-02T00:00:00.000Z",
+  "2003-10-09T00:00:00.000Z",
+  "2003-10-16T00:00:00.000Z",
+  "2003-10-23T00:00:00.000Z",
+  "2003-11-06T00:00:00.000Z",
+  "2003-11-20T00:00:00.000Z",
+  "2003-12-04T00:00:00.000Z",
+  "2003-12-11T00:00:00.000Z",
+  "2004-01-15T00:00:00.000Z",
+  "2004-01-22T00:00:00.000Z",
+  "2004-02-05T00:00:00.000Z",
+  "2004-02-12T00:00:00.000Z",
+  "2004-02-26T00:00:00.000Z",
+  "2004-03-04T00:00:00.000Z",
+  "2004-03-18T00:00:00.000Z",
+  "2004-04-01T00:00:00.000Z",
+  "2004-04-15T00:00:00.000Z",
+  "2004-04-29T00:00:00.000Z",
+  "2004-05-06T00:00:00.000Z"
 ];
 
 const knownEpisodes = [];
@@ -110,12 +146,8 @@ for (let episode = 1; episode <= 38; episode++) {
     id: `narucannon:2:${episode}`,
     season: 2,
     episode,
-    title:
-      season2Titles[episode - 1] ||
-      `Chunin Exams ${String(episode).padStart(2, "0")}`,
-    released:
-      season2Dates[episode - 1] ||
-      "2003-10-02T00:00:00.000Z"
+    title: season2Titles[episode - 1],
+    released: season2Dates[episode - 1]
   });
 }
 
@@ -217,7 +249,61 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-048-gaara-vs-rock-lee-the-power-of-youth-explodes_/cap_15-31_8461.jpg",
 
   "narucannon:2:20":
-    "https://animehistory.org/uploads/screencaps/naruto-episode-051-a-shadow-in-darkness-danger-approaches-sasuke/cap_06-47_ea9c.jpg"
+    "https://animehistory.org/uploads/screencaps/naruto-episode-051-a-shadow-in-darkness-danger-approaches-sasuke/cap_06-47_ea9c.jpg",
+
+  "narucannon:2:21":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-052-ebisu-returns-naruto_s-toughest-training-yet_/cap_03-50_6139.jpg",
+
+  "narucannon:2:22":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-053-long-time-no-see-jiraiya-returns_/cap_03-13_14a9.jpg",
+
+  "narucannon:2:23":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-054-the-summoning-jutsu-wisdom-of-the-pervy-sage_/cap_20-16_273e.jpg",
+
+  "narucannon:2:24":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-056-live-or-die-risk-it-all-to-win-it-all_/cap_20-00_792b.jpg",
+
+  "narucannon:2:25":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-058-hospital-besieged-the-evil-hand-revealed_/cap_13-41_b80a.jpg",
+
+  "narucannon:2:26":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-060-byakugan-vs-shadow-clone-technique_/cap_14-32_6fba.jpg",
+
+  "narucannon:2:27":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-061-ultimate-defense-zero-blind-spot_/cap_13-56_bc24.jpg",
+
+  "narucannon:2:28":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-064-zero-motivation-the-guy-with-cloud-envy_/cap_19-51_1f5f.jpg",
+
+  "narucannon:2:29":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-066-bushy-brow_s-jutsu-sasuke-style_/cap_06-12_cf3b.jpg",
+
+  "narucannon:2:30":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-067-late-for-the-show_-but-ready-to-go_-the-ultimate-secret-technique-is-born_/cap_14-32_fc67.jpg",
+
+  "narucannon:2:31":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-068-zero-hour_-the-destruction-of-the-hidden-leaf-village-begins_/cap_12-24_fd57.jpg",
+
+  "narucannon:2:32":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-070-a-shirker_s-call-to-action-a-layabout-no-more_/cap_13-20_8379.jpg",
+
+  "narucannon:2:33":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-071-an-unrivaled-match-hokage-battle-royale_/cap_16-12_1647.jpg",
+
+  "narucannon:2:34":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-073-forbidden-secret-technique-reaper-death-seal_/cap_05-56_2fdc.jpg",
+
+  "narucannon:2:35":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-075-sasuke_s-decision-pushed-to-the-edge_/cap_10-43_168c.jpg",
+
+  "narucannon:2:36":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-076-assassin-of-the-moonlit-night/cap_20-55_02eb.jpg",
+
+  "narucannon:2:37":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-078-naruto_s-ninja-handbook/cap_10-13_53f9.jpg",
+
+  "narucannon:2:38":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-080-the-third-hokage_-forever-/cap_17-36_f3a1.jpg"
 };
 
 async function getFolder(path = "") {
@@ -490,7 +576,7 @@ app.get("/manifest.json", (req, res) => {
   res.json({
     id: "com.narucannon.custom",
 
-    version: "2.0.2",
+    version: "2.0.3",
 
     name: "NaruCannon",
 
