@@ -359,8 +359,10 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
         id: "narucannon",
         type: "series",
         name: "NaruCannon",
-        description: "NaruCannon custom series",
-        poster:
+        description:
+  "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.", 
+
+poster:
           "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
         posterShape: "poster",
 
