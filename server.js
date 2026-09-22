@@ -28,6 +28,22 @@ const season1Titles = [
   "The Demon in the Snow"
 ];
 
+const season1Dates = [
+  "2002-10-03T00:00:00.000Z",
+  "2002-10-10T00:00:00.000Z",
+  "2002-10-17T00:00:00.000Z",
+  "2002-10-24T00:00:00.000Z",
+  "2002-10-31T00:00:00.000Z",
+  "2002-11-14T00:00:00.000Z",
+  "2002-11-21T00:00:00.000Z",
+  "2002-12-05T00:00:00.000Z",
+  "2002-12-19T00:00:00.000Z",
+  "2002-12-26T00:00:00.000Z",
+  "2003-01-30T00:00:00.000Z",
+  "2003-02-06T00:00:00.000Z",
+  "2003-02-13T00:00:00.000Z"
+];
+
 const knownEpisodes = [];
 
 for (let episode = 1; episode <= 13; episode++) {
@@ -35,7 +51,8 @@ for (let episode = 1; episode <= 13; episode++) {
     id: `narucannon:1:${episode}`,
     season: 1,
     episode,
-    title: season1Titles[episode - 1]
+    title: season1Titles[episode - 1],
+    released: season1Dates[episode - 1]
   });
 }
 
@@ -44,7 +61,8 @@ for (let episode = 1; episode <= 38; episode++) {
     id: `narucannon:2:${episode}`,
     season: 2,
     episode,
-    title: `Chunin Exams ${String(episode).padStart(2, "0")}`
+    title: `Chunin Exams ${String(episode).padStart(2, "0")}`,
+    released: "2003-02-20T00:00:00.000Z"
   });
 }
 
@@ -345,10 +363,11 @@ app.get("/meta/series/narucannon.json", async (req, res) => {
         poster:
           "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
         posterShape: "poster",
+
         videos: episodes.map(ep => ({
           id: ep.id,
           title: ep.title,
-          released: "2002-01-01T00:00:00.000Z",
+          released: ep.released || "2002-01-01T00:00:00.000Z",
           season: ep.season,
           episode: ep.episode,
           ...(ep.thumbnail
