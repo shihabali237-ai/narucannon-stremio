@@ -51,7 +51,10 @@ const season2Titles = [
   "Start Your Engines",
   "The Tenth Question: All or Nothing!",
   "The Chunin Exam Stage 2: The Forest of Death",
-  "Eat or Be Eaten: Panic in the Forest"
+  "Eat or Be Eaten: Panic in the Forest",
+  "Introduction of Orochimaru",
+  "Bushy Brow's Pledge: Undying Love and Protection!",
+  "Sakura Blossoms!"
 ];
 
 const season2Dates = [
@@ -61,7 +64,10 @@ const season2Dates = [
   "2003-03-20T00:00:00.000Z",
   "2003-04-03T00:00:00.000Z",
   "2003-04-17T00:00:00.000Z",
-  "2003-04-24T00:00:00.000Z"
+  "2003-04-24T00:00:00.000Z",
+  "2003-05-08T00:00:00.000Z",
+  "2003-05-15T00:00:00.000Z",
+  "2003-05-22T00:00:00.000Z"
 ];
 
 const knownEpisodes = [];
@@ -86,7 +92,7 @@ for (let episode = 1; episode <= 38; episode++) {
       `Chunin Exams ${String(episode).padStart(2, "0")}`,
     released:
       season2Dates[episode - 1] ||
-      "2003-04-24T00:00:00.000Z"
+      "2003-05-22T00:00:00.000Z"
   });
 }
 
@@ -119,7 +125,7 @@ const thumbnails = {
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
 
   "narucannon:1:10":
-    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s_secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
 
   "narucannon:1:11":
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
@@ -149,7 +155,16 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-025-the-tenth-question-all-or-nothing_/cap_18-56_fcd2.jpg",
 
   "narucannon:2:7":
-    "https://animehistory.org/uploads/screencaps/naruto-episode-028-eat-or-be-eaten-panic-in-the-forest/cap_04-23_e4f0.jpg"
+    "https://animehistory.org/uploads/screencaps/naruto-episode-028-eat-or-be-eaten-panic-in-the-forest/cap_04-23_e4f0.jpg",
+
+  "narucannon:2:8":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-030-the-sharingan-revived-dragon-flame-jutsu_/cap_09-20_3aa8.jpg",
+
+  "narucannon:2:9":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-031-bushy-brow_s-pledge-undying-love-and-protection_/cap_08-44_fa8b.jpg",
+
+  "narucannon:2:10":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-032-sakura-blossoms_/cap_03-12_9d55.jpg"
 };
 
 async function getFolder(path = "") {
