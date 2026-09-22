@@ -48,22 +48,22 @@ const season2Titles = [
   "The Chunin Exams Begin",
   "Rock Lee vs Sasuke",
   "Genin Takedown",
-  "Start Your Engines"
+  "Start Your Engines",
+  "The Tenth Question: All or Nothing!",
+  "The Chunin Exam Stage 2: The Forest of Death",
+  "Eat or Be Eaten: Panic in the Forest"
 ];
 
 const season2Dates = [
   "2003-02-27T00:00:00.000Z",
   "2003-03-06T00:00:00.000Z",
   "2003-03-13T00:00:00.000Z",
-  "2003-03-20T00:00:00.000Z"
+  "2003-03-20T00:00:00.000Z",
+  "2003-04-03T00:00:00.000Z",
+  "2003-04-17T00:00:00.000Z",
+  "2003-04-24T00:00:00.000Z"
 ];
 
-/*
- * KNOWN EPISODES
- *
- * IMPORTANT:
- * This must exist before getKnownEpisodes() is called.
- */
 const knownEpisodes = [];
 
 for (let episode = 1; episode <= 13; episode++) {
@@ -86,13 +86,10 @@ for (let episode = 1; episode <= 38; episode++) {
       `Chunin Exams ${String(episode).padStart(2, "0")}`,
     released:
       season2Dates[episode - 1] ||
-      "2003-03-20T00:00:00.000Z"
+      "2003-04-24T00:00:00.000Z"
   });
 }
 
-/*
- * EPISODE THUMBNAILS
- */
 const thumbnails = {
   "narucannon:1:1":
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-001-enter-naruto-uzumaki_/cap_12-30_e97c.jpg",
@@ -143,12 +140,18 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-023-genin-takedown_-all-nine-rookies-face-off_/cap_02-47_d7d5.jpg",
 
   "narucannon:2:4":
-    "https://animehistory.org/uploads/screencaps/naruto-episode-024-start-your-engines-the-chunin-exam-begins_/cap_13-37_8db4.jpg"
+    "https://animehistory.org/uploads/screencaps/naruto-episode-024-start-your-engines-the-chunin-exam-begins_/cap_13-37_8db4.jpg",
+
+  "narucannon:2:5":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-025-the-tenth-question-all-or-nothing_/cap_06-26_f083.jpg",
+
+  "narucannon:2:6":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-025-the-tenth-question-all-or-nothing_/cap_18-56_fcd2.jpg",
+
+  "narucannon:2:7":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-028-eat-or-be-eaten-panic-in-the-forest/cap_04-23_e4f0.jpg"
 };
 
-/*
- * PIXELDRAIN FOLDER ACCESS
- */
 async function getFolder(path = "") {
   const url = path
     ? `${PIXELDRAIN_API}/${encodeURIComponent(path)}`
@@ -163,12 +166,6 @@ async function getFolder(path = "") {
   return response.json();
 }
 
-/*
- * DISCOVER SEASONS 3+
- *
- * Seasons 1 and 2 are already known above,
- * so Render doesn't need to scan them when loading metadata.
- */
 async function discoverFutureSeasons() {
   const root = await getFolder();
 
@@ -251,9 +248,6 @@ async function discoverFutureSeasons() {
   );
 }
 
-/*
- * BACKGROUND DISCOVERY
- */
 async function refreshDiscoveryInBackground() {
   if (discoveryPromise) {
     return discoveryPromise;
@@ -281,9 +275,6 @@ async function refreshDiscoveryInBackground() {
   return discoveryPromise;
 }
 
-/*
- * GET KNOWN EPISODES
- */
 function getKnownEpisodes() {
   return knownEpisodes.map(ep => ({
     ...ep,
@@ -296,9 +287,6 @@ function getKnownEpisodes() {
   }));
 }
 
-/*
- * GET ALL EPISODES
- */
 async function getAllEpisodes() {
   const known = getKnownEpisodes();
 
@@ -317,9 +305,6 @@ async function getAllEpisodes() {
   return known;
 }
 
-/*
- * PIXELDRAIN FILE URL
- */
 function getPixeldrainFileUrl(filePath) {
   const relativePath = filePath
     .replace(`/CEG3sGRE/`, "")
@@ -330,12 +315,6 @@ function getPixeldrainFileUrl(filePath) {
   return `${PIXELDRAIN_API}/${relativePath}`;
 }
 
-/*
- * FIND A SPECIFIC EPISODE IN PIXELDRAIN
- *
- * This only happens when somebody actually
- * tries to play an episode.
- */
 async function findPixeldrainEpisode(id) {
   const parts = id.split(":");
 
@@ -423,9 +402,6 @@ async function findPixeldrainEpisode(id) {
   return null;
 }
 
-/*
- * CORS
- */
 app.use((req, res, next) => {
   res.setHeader(
     "Access-Control-Allow-Origin",
@@ -435,9 +411,6 @@ app.use((req, res, next) => {
   next();
 });
 
-/*
- * MANIFEST
- */
 app.get("/manifest.json", (req, res) => {
   res.setHeader(
     "Cache-Control",
@@ -476,9 +449,6 @@ app.get("/manifest.json", (req, res) => {
   });
 });
 
-/*
- * CATALOG
- */
 app.get(
   "/catalog/series/narucannon.json",
   (req, res) => {
@@ -509,9 +479,6 @@ app.get(
   }
 );
 
-/*
- * SERIES METADATA
- */
 app.get(
   "/meta/series/narucannon.json",
   async (req, res) => {
@@ -574,9 +541,6 @@ app.get(
   }
 );
 
-/*
- * STREAM
- */
 app.get(
   /^\/stream\/series\/(.+)\.json$/,
   async (req, res) => {
@@ -618,9 +582,6 @@ app.get(
   }
 );
 
-/*
- * START SERVER
- */
 app.listen(
   PORT,
   "0.0.0.0",
