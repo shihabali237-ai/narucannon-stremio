@@ -12,6 +12,9 @@ let discoveryCache = [];
 let discoveryCacheTime = 0;
 let discoveryPromise = null;
 
+const showDescription =
+  "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.";
+
 const season1Titles = [
   "The Beginning",
   "Konohamaru",
@@ -54,7 +57,17 @@ const season2Titles = [
   "Eat or Be Eaten: Panic in the Forest",
   "Introduction of Orochimaru",
   "Bushy Brow's Pledge: Undying Love and Protection!",
-  "Sakura Blossoms!"
+  "Sakura Blossoms!",
+  "Clone Counter Attack!",
+  "Surviving the Cut",
+  "Sasuke vs Yoro",
+  "Kakashi and Orochimaru: Face to Face",
+  "Kunoichi Rumble: The Rivals Get Serious!",
+  "Sakura vs Ino",
+  "Akamaru Unleashed! Who's Top Dog now?",
+  "Byakugan Battle: Hinata Grows Bold!",
+  "Gaara vs. Rock Lee: The Power of Youth Explodes!",
+  "A Shadow in Darkness: Danger Approaches Sasuke"
 ];
 
 const season2Dates = [
@@ -67,7 +80,17 @@ const season2Dates = [
   "2003-04-24T00:00:00.000Z",
   "2003-05-08T00:00:00.000Z",
   "2003-05-15T00:00:00.000Z",
-  "2003-05-22T00:00:00.000Z"
+  "2003-05-22T00:00:00.000Z",
+  "2003-06-19T00:00:00.000Z",
+  "2003-06-26T00:00:00.000Z",
+  "2003-07-10T00:00:00.000Z",
+  "2003-07-17T00:00:00.000Z",
+  "2003-07-24T00:00:00.000Z",
+  "2003-07-31T00:00:00.000Z",
+  "2003-08-14T00:00:00.000Z",
+  "2003-08-28T00:00:00.000Z",
+  "2003-09-11T00:00:00.000Z",
+  "2003-10-02T00:00:00.000Z"
 ];
 
 const knownEpisodes = [];
@@ -92,7 +115,7 @@ for (let episode = 1; episode <= 38; episode++) {
       `Chunin Exams ${String(episode).padStart(2, "0")}`,
     released:
       season2Dates[episode - 1] ||
-      "2003-05-22T00:00:00.000Z"
+      "2003-10-02T00:00:00.000Z"
   });
 }
 
@@ -125,7 +148,7 @@ const thumbnails = {
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-012-battle-on-the-bridge_-zabuza-returns_/cap_00-21-19_c690.jpg",
 
   "narucannon:1:10":
-    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s-secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
+    "https://www.animehistory.org/uploads/screencaps/naruto-episode-013-haku_s_secret-jutsu-demonic-mirroring-ice-crystals/cap_14-35_1954.jpg",
 
   "narucannon:1:11":
     "https://www.animehistory.org/uploads/screencaps/naruto-episode-017-white-past-hidden-ambition/cap_14-25_7bd6.jpg",
@@ -164,7 +187,37 @@ const thumbnails = {
     "https://animehistory.org/uploads/screencaps/naruto-episode-031-bushy-brow_s-pledge-undying-love-and-protection_/cap_08-44_fa8b.jpg",
 
   "narucannon:2:10":
-    "https://animehistory.org/uploads/screencaps/naruto-episode-032-sakura-blossoms_/cap_03-12_9d55.jpg"
+    "https://animehistory.org/uploads/screencaps/naruto-episode-032-sakura-blossoms_/cap_03-12_9d55.jpg",
+
+  "narucannon:2:11":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-036-clone-vs-clone-mine-are-better-than-yours_/cap_10-29_b012.jpg",
+
+  "narucannon:2:12":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-037-surviving-the-cut_-the-rookie-nine-together-again_/cap_12-48_b35d.jpg",
+
+  "narucannon:2:13":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-039-bushy-brow_s-jealousy-lions-barrage-unleashed_/cap_03-44_c1f9.jpg",
+
+  "narucannon:2:14":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-040-kakashi-and-orochimaru-face-to-face_/cap_12-57_a867.jpg",
+
+  "narucannon:2:15":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-041-kunoichi-rumble-the-rivals-get-serious_/cap_09-22_0fdd.jpg",
+
+  "narucannon:2:16":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-042-the-ultimate-battle-cha_/cap_04-50_96d2.jpg",
+
+  "narucannon:2:17":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-044-akamaru-unleashed_-who_s-top-dog-now/cap_16-49_3f84.jpg",
+
+  "narucannon:2:18":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-046-byakugan-battle-hinata-grows-bold_/cap_17-21_b655.jpg",
+
+  "narucannon:2:19":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-048-gaara-vs-rock-lee-the-power-of-youth-explodes_/cap_15-31_8461.jpg",
+
+  "narucannon:2:20":
+    "https://animehistory.org/uploads/screencaps/naruto-episode-051-a-shadow-in-darkness-danger-approaches-sasuke/cap_06-47_ea9c.jpg"
 };
 
 async function getFolder(path = "") {
@@ -437,12 +490,11 @@ app.get("/manifest.json", (req, res) => {
   res.json({
     id: "com.narucannon.custom",
 
-    version: "2.0.1",
+    version: "2.0.2",
 
     name: "NaruCannon",
 
-    description:
-      "NaruCannon from Pixeldrain",
+    description: showDescription,
 
     resources: [
       "catalog",
@@ -483,6 +535,8 @@ app.get(
 
           name: "NaruCannon",
 
+          description: showDescription,
+
           poster:
             "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
 
@@ -514,8 +568,7 @@ app.get(
 
           name: "NaruCannon",
 
-          description:
-            "Naruto Uzumaki is a young ninja with a dream of becoming Hokage. Alongside his teammates Sasuke Uchiha and Sakura Haruno, and their teacher Kakashi Hatake, Naruto begins his journey through the shinobi world. NaruCannon Recut presents the story in a streamlined format, cutting filler, excessive recaps and unnecessary repetition while keeping the main story intact.",
+          description: showDescription,
 
           poster:
             "https://raw.githubusercontent.com/shihabali237-ai/narucannon-stremio/refs/heads/main/narucannon-poster.jpg",
