@@ -454,9 +454,13 @@ async function getAllEpisodes() {
     ];
   }
 
-  refreshDiscoveryInBackground();
+  const discovered =
+    await refreshDiscoveryInBackground();
 
-  return known;
+  return [
+    ...known,
+    ...discovered
+  ];
 }
 
 function getPixeldrainFileUrl(filePath) {
@@ -576,7 +580,7 @@ app.get("/manifest.json", (req, res) => {
   res.json({
     id: "com.narucannon.custom",
 
-    version: "2.0.3",
+    version: "2.0.5",
 
     name: "NaruCannon",
 
@@ -722,7 +726,11 @@ app.get(
 
             title: episode.title,
 
-            url: episode.url
+            url: episode.url,
+
+            behaviorHints: {
+              bingeGroup: "narucannon"
+            }
           }
         ]
       });
@@ -741,7 +749,7 @@ app.listen(
   "0.0.0.0",
   () => {
     console.log(
-      `NaruCannon Pixeldrain server running on port ${PORT}`
+    `NaruCannon Pixeldrain server running on port ${PORT}`
     );
   }
 );
